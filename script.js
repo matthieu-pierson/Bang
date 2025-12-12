@@ -729,3 +729,20 @@ if (toggleImagesBtn) {
 
 // Load image preference on page load
 loadImagePreference();
+
+// Burger Menu
+const burgerMenu = document.querySelector('.burger-menu');
+const navMenu = document.querySelector('.nav-menu');
+
+burgerMenu.addEventListener('click', () => {
+    burgerMenu.classList.toggle('open');
+    navMenu.classList.toggle('open');
+});
+
+// Close menu when a nav button is clicked
+navMenu.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+        burgerMenu.classList.remove('open');
+        navMenu.classList.remove('open');
+    }
+});

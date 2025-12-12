@@ -75,6 +75,7 @@ body {
     opacity: 1;
     pointer-events: all;
     transform: scale(1);
+    padding-top: 4rem;
 }
 
 .view.hidden {
@@ -376,7 +377,6 @@ textarea:focus {
     max-width: 600px;
     overflow-y: auto;
     max-height: 90vh;
-    padding: 2rem 1rem;
 }
 
 .editor-title {
@@ -522,7 +522,6 @@ textarea:focus {
     max-width: 600px;
     overflow-y: auto;
     max-height: 90vh;
-    padding: 2rem 1rem;
 }
 
 .distribution-list {
@@ -580,14 +579,111 @@ textarea:focus {
     letter-spacing: 1px;
 }
 
-/* Language Switcher */
-.language-switcher {
+/* Burger Menu */
+.burger-menu {
     position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    display: flex;
-    gap: 0.5rem;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1001;
+    cursor: pointer;
+}
+
+.burger-icon {
+    width: 30px;
+    height: 22px;
+    position: relative;
+    transform: rotate(0deg);
+    transition: .5s ease-in-out;
+}
+
+.burger-icon span {
+    display: block;
+    position: absolute;
+    height: 4px;
+    width: 100%;
+    background: var(--text-primary);
+    border-radius: 9px;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0deg);
+    transition: .25s ease-in-out;
+}
+
+.burger-icon span:nth-child(1) {
+    top: 0px;
+}
+
+.burger-icon span:nth-child(2) {
+    top: 9px;
+}
+
+.burger-icon span:nth-child(3) {
+    top: 18px;
+}
+
+.burger-menu.open .burger-icon span:nth-child(1) {
+    top: 9px;
+    transform: rotate(135deg);
+}
+
+.burger-menu.open .burger-icon span:nth-child(2) {
+    opacity: 0;
+    left: -60px;
+}
+
+.burger-menu.open .burger-icon span:nth-child(3) {
+    top: 9px;
+    transform: rotate(-135deg);
+}
+
+/* Nav Menu */
+.nav-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(18, 18, 20, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-menu.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nav-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.nav-menu.open .nav-content {
+    transform: scale(1);
+}
+
+.nav-menu .secondary-btn-outline,
+.nav-menu .danger-btn,
+.nav-menu .back-btn {
+    width: 280px;
+    text-align: center;
+}
+
+.language-switcher {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .lang-btn {
@@ -662,7 +758,12 @@ textarea:focus {
     border-radius: 12px;
 }
 
+
+
 .card-back.image-mode h2,
+
 .card-back.image-mode .role-icon {
+
     display: none;
+
 }

@@ -12,6 +12,32 @@
 </head>
 
 <body>
+    <div class="burger-menu">
+        <div class="burger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <div class="nav-menu">
+        <div class="nav-content">
+            <button id="edit-rules-btn" class="secondary-btn-outline">
+                <span class="btn-text" data-i18n="editRules">⚙️ Modifier les Règles</span>
+            </button>
+            <button id="view-distribution-btn" class="secondary-btn-outline hidden">
+                <span class="btn-text" data-i18n="viewDistribution">📋 Voir la Dernière Distribution</span>
+            </button>
+            <div class="language-switcher">
+                <button id="toggle-images-btn" class="toggle-btn active" title="Toggle Card Images">
+                    <span class="toggle-icon">🎴</span>
+                </button>
+                <button class="lang-btn active" data-lang="fr">🇫🇷 FR</button>
+                <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Setup View -->
         <section id="setup-view" class="view active">
@@ -29,14 +55,6 @@
                 <button id="start-btn" class="primary-btn">
                     <span class="btn-text" data-i18n="distribute">Distribuer</span>
                     <span class="btn-shine"></span>
-                </button>
-
-                <button id="edit-rules-btn" class="secondary-btn-outline">
-                    <span class="btn-text" data-i18n="editRules">⚙️ Modifier les Règles</span>
-                </button>
-
-                <button id="view-distribution-btn" class="secondary-btn-outline hidden">
-                    <span class="btn-text" data-i18n="viewDistribution">📋 Voir la Dernière Distribution</span>
                 </button>
             </div>
         </section>
@@ -144,15 +162,6 @@
         </section>
     </div>
     
-    <!-- Language Switcher -->
-    <div class="language-switcher">
-        <button id="toggle-images-btn" class="toggle-btn active" title="Toggle Card Images">
-            <span class="toggle-icon">🎴</span>
-        </button>
-        <button class="lang-btn active" data-lang="fr">🇫🇷 FR</button>
-        <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
-    </div>
-
     <script src="script.js?v=2"></script>
 </body>
 
