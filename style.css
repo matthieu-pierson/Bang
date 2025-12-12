@@ -1,15 +1,28 @@
 :root {
-    --bg-color: #121214;
-    --surface-color: #1c1c1f;
+    --bg-color: transparent;
+    --surface-color: rgba(28, 28, 31, 0.8);
     --primary-accent: #eebb44;
     /* Western Gold */
     --secondary-accent: #c43e3e;
     /* Sheriff Badge Redish */
     --text-primary: #ffffff;
-    --text-secondary: #a1a1aa;
-    --card-bg: #2a2a2e;
+    --text-secondary: #ffffff;
+    /*--text-secondary: #a1a1aa;*/
+    --card-bg: rgba(42, 42, 46, 0.85);
     --font-main: 'Outfit', sans-serif;
     --transition-speed: 0.3s;
+}
+
+#background-video {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+    filter: brightness(0.5);
 }
 
 * {
@@ -32,7 +45,17 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    /* To use a background image:
+       1. In index.html, remove or comment out the <video id="background-video"> element.
+       2. Uncomment the 'background-image' line below and set the path to your image.
+    */
+    /* background-image: url('resources/utqyraxczwyd1.av1.mp4'); */ /* Example path */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    background-color: #000; /* Fallback color if the image doesn't load */
     color: var(--text-primary);
     font-family: var(--font-main);
     height: 100vh;
@@ -225,7 +248,7 @@ textarea:focus {
 }
 
 .card-front {
-    background: linear-gradient(135deg, #2a2a2e 0%, #1c1c1f 100%);
+    background: linear-gradient(135deg, rgba(42, 42, 46, 0.85) 0%, rgba(28, 28, 31, 0.85) 100%);
     border: 2px solid #333;
     flex-direction: column;
 }
