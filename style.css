@@ -741,7 +741,7 @@ textarea:focus {
 
 /* Card image display */
 .card-back.image-mode {
-    background: white;
+    background: white !important;
 }
 
 .card-back.image-mode .role-reveal {
