@@ -374,20 +374,20 @@ function updateGameView() {
     }
 
     const currentPlayer = players[currentIndex];
+    const currentRole = assignedRoles[currentIndex];
+
     display.playerName.textContent = currentPlayer;
     display.instruction.textContent = t('passDevice');
 
     // Pre-set role text but hide it behind card
-    display.roleName.textContent = assignedRoles[currentIndex];
+    display.roleName.textContent = currentRole;
 
-    // Set icon based on role (optional polish)
-    let icon = "★";
-    const r = assignedRoles[currentIndex].toLowerCase();
-    if (r === 'shérif') icon = "★";
-    else if (r === 'renégat') icon = "🦅";
-    else if (r === 'hors-la-loi') icon = "🔫";
-    else if (r === 'adjoint') icon = "👮";
-    display.roleDesc.textContent = icon;
+    // Set icon and color based on role
+    display.roleDesc.textContent = getRoleIcon(currentRole);
+    const cardBack = document.querySelector('.card-back');
+    if (cardBack) {
+        cardBack.style.background = getRoleColor(currentRole);
+    }
     
     // Update card display based on image mode
     updateCardDisplay();
@@ -576,20 +576,8 @@ function openDistributionView() {
         const item = document.createElement('div');
         item.className = 'distribution-item';
 
-        // Get role icon
-        let icon = "★";
-        const r = role.toLowerCase();
-        if (r === 'shérif') icon = "★";
-        else if (r === 'renégat') icon = "🦅";
-        else if (r === 'hors-la-loi') icon = "🔫";
-        else if (r === 'adjoint') icon = "👮";
-
-        // Get role color
-        let roleColor = 'var(--primary-accent)';
-        if (r === 'shérif') roleColor = '#FFD700';
-        else if (r === 'renégat') roleColor = '#FF6B6B';
-        else if (r === 'hors-la-loi') roleColor = '#8B4513';
-        else if (r === 'adjoint') roleColor = '#4A90E2';
+        const icon = getRoleIcon(role);
+        const roleColor = getRoleColor(role);
 
         item.innerHTML = `
             <div class="distribution-card">
@@ -658,6 +646,24 @@ function getRoleImagePath(role) {
         'Deputy': 'adjoint.png'
     };
     return `resources/roles/${roleMap[role] || 'sherif.png'}`;
+}
+
+function getRoleColor(role) {
+    const r = role.toLowerCase();
+    if (r === 'shérif' || r === 'sheriff') return '#FFD700';
+    if (r === 'renégat' || r === 'renegade') return '#FF6B6B';
+    if (r === 'hors-la-loi' || r === 'outlaw') return '#8B4513';
+    if (r === 'adjoint' || r === 'deputy') return '#4A90E2';
+    return 'var(--primary-accent)'; // Default
+}
+
+function getRoleIcon(role) {
+    const r = role.toLowerCase();
+    if (r === 'shérif' || r === 'sheriff') return "★";
+    if (r === 'renégat' || r === 'renegade') return "🦅";
+    if (r === 'hors-la-loi' || r === 'outlaw') return "🔫";
+    if (r === 'adjoint' || r === 'deputy') return "👮";
+    return "★"; // Default
 }
 
 function toggleCardImages() {
