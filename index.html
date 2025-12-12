@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bang!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Setup View -->
+        <section id="setup-view" class="view active">
+            <div class="content-wrapper">
+                <h1 class="game-title">BANG! <span class="subtitle" data-i18n="subtitle">Distributeur de Rôles</span></h1>
+                <p class="instruction" data-i18n="instruction">Entrez les noms des joueurs, séparés par des virgules.</p>
+
+                <div class="input-group">
+                    <textarea id="player-names" spellcheck="false">Jérémy, Emilie, Richard, Daria, Matthieu</textarea>
+                    <div class="glow-effect"></div>
+                </div>
+
+                <p id="error-msg" class="error-text hidden"></p>
+
+                <button id="start-btn" class="primary-btn">
+                    <span class="btn-text" data-i18n="distribute">Distribuer</span>
+                    <span class="btn-shine"></span>
+                </button>
+
+                <button id="edit-rules-btn" class="secondary-btn-outline">
+                    <span class="btn-text" data-i18n="editRules">⚙️ Modifier les Règles</span>
+                </button>
+
+                <button id="view-distribution-btn" class="secondary-btn-outline hidden">
+                    <span class="btn-text" data-i18n="viewDistribution">📋 Voir la Dernière Distribution</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Game View -->
+        <section id="game-view" class="view hidden">
+            <div class="content-wrapper">
+                <div class="status-message">
+                    <h2 id="current-instruction" data-i18n="passDevice">Passe l'appareil à...</h2>
+                    <h1 id="player-name-display" class="highlight-name">Nom du Joueur</h1>
+                </div>
+
+                <div class="card-container" id="role-card">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-design">
+                                <span class="card-icon">?</span>
+                                <span class="tap-hint" data-i18n="tapToReveal">Touche pour Révéler</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <div class="role-reveal">
+                                <h2 id="role-name">Sheriff</h2>
+                                <p id="role-description" class="role-icon">★</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Done button removed -->
+            </div>
+        </section>
+
+        <!-- Rule Editor View -->
+        <section id="rules-editor-view" class="view hidden">
+            <div class="content-wrapper editor-wrapper">
+                <h1 class="editor-title" data-i18n="editorTitle">Éditeur de Règles</h1>
+
+                <!-- Player Count Selector -->
+                <div class="player-count-tabs">
+                    <button class="tab-btn active" data-count="4"><span data-i18n-template="players" data-count="4">4 Joueurs</span></button>
+                    <button class="tab-btn" data-count="5"><span data-i18n-template="players" data-count="5">5 Joueurs</span></button>
+                    <button class="tab-btn" data-count="6"><span data-i18n-template="players" data-count="6">6 Joueurs</span></button>
+                    <button class="tab-btn" data-count="7"><span data-i18n-template="players" data-count="7">7 Joueurs</span></button>
+                </div>
+
+                <!-- Current Configurations -->
+                <div class="configs-section">
+                    <h3 data-i18n="currentConfigs">Configurations Actuelles</h3>
+                    <div id="config-list" class="config-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Add New Configuration -->
+                <div class="add-config-section">
+                    <h3 data-i18n="addConfig">Ajouter une Configuration</h3>
+                    <div class="role-inputs">
+                        <div class="role-input-group">
+                            <label data-i18n="sheriff">Shérif</label>
+                            <input type="number" id="input-sheriff" min="0" max="7" value="1">
+                        </div>
+                        <div class="role-input-group">
+                            <label data-i18n="renegade">Renégat</label>
+                            <input type="number" id="input-renegade" min="0" max="7" value="1">
+                        </div>
+                        <div class="role-input-group">
+                            <label data-i18n="outlaw">Hors-la-loi</label>
+                            <input type="number" id="input-outlaw" min="0" max="7" value="0">
+                        </div>
+                        <div class="role-input-group">
+                            <label data-i18n="deputy">Adjoint</label>
+                            <input type="number" id="input-deputy" min="0" max="7" value="2">
+                        </div>
+                    </div>
+                    <button id="add-config-btn" class="primary-btn" data-i18n="add">Ajouter</button>
+                    <p id="config-error" class="error-text hidden"></p>
+                </div>
+
+                <!-- Actions -->
+                <div class="editor-actions">
+                    <button id="reset-rules-btn" class="danger-btn" data-i18n="reset">Réinitialiser</button>
+                    <button id="close-editor-btn" class="back-btn" data-i18n="back">Retour</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Distribution View -->
+        <section id="distribution-view" class="view hidden">
+            <div class="content-wrapper distribution-wrapper">
+                <h1 class="editor-title" data-i18n="lastDistribution">Dernière Distribution</h1>
+                <div id="distribution-list" class="distribution-list">
+                    <!-- Populated by JS -->
+                </div>
+                <button id="close-distribution-btn" class="back-btn" data-i18n="back">Retour</button>
+            </div>
+        </section>
+
+        <!-- Result View (Optional, maybe for later) -->
+        <section id="end-view" class="view hidden">
+            <div class="content-wrapper">
+                <h1 data-i18n="allRolesDistributed">Tous les rôles distribués !</h1>
+                <button id="restart-btn" class="primary-btn" data-i18n="newGame">Nouvelle Partie</button>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <button id="toggle-images-btn" class="toggle-btn active" title="Toggle Card Images">
+            <span class="toggle-icon">🎴</span>
+        </button>
+        <button class="lang-btn active" data-lang="fr">🇫🇷 FR</button>
+        <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+    </div>
+
+    <script src="script.js?v=2"></script>
+</body>
+
+</html>
