@@ -377,6 +377,7 @@ textarea:focus {
     max-width: 600px;
     overflow-y: auto;
     max-height: 90vh;
+    padding-bottom: 3rem;
 }
 
 .editor-title {
