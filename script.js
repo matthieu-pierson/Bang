@@ -734,15 +734,9 @@ function loadLastDistribution() {
 
 // On initial load, set up the correct view and load all necessary data.
 document.addEventListener('DOMContentLoaded', () => {
-    // Default to 'setup' view if no hash is present
-    const initialView = window.location.hash.substring(1) || 'setup';
-
-    // Set the initial history state without triggering a page load.
-    // This makes the back button work correctly from the start.
-    history.replaceState({ view: initialView }, '', `#${initialView}`);
-
-    // Display the correct initial view without adding a new history entry.
-    switchView(initialView, true);
+    // Always start at the setup view to ensure a clean state.
+    // We call switchView with 'true' to prevent it from creating an extra history entry.
+    switchView('setup', true);
 
     // Load all initial data once the DOM is ready.
     loadRules();
@@ -753,11 +747,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle browser back/forward navigation.
 window.addEventListener('popstate', (event) => {
-    // If a state exists (i.e., we're not at the very beginning of the history),
-    // switch to the view stored in that state.
-    if (event.state && event.state.view) {
-        switchView(event.state.view, true); // `true` prevents a new history entry
+    // When popstate is triggered, switch to the appropriate view.
+    let targetView = 'setup'; // Default to setup view
+
+    if (event.state && event.state.view && views[event.state.view]) {
+        // If the state object exists and the view is valid, use the view from there.
+        targetView = event.state.view;
     }
+    // If state is null or invalid, it means we're at the initial entry or something is wrong.
+    // We'll safely default to the 'setup' view.
+    
+    switchView(targetView, true); // `true` prevents creating a new history entry
 });
 
 
