@@ -315,7 +315,7 @@ function getRandomRule(count) {
     return [...options[randomIndex]]; // Return a copy
 }
 
-function switchView(viewName) {
+function switchView(viewName, fromPopState = false) {
     Object.values(views).forEach(el => {
         el.classList.add('hidden');
         el.classList.remove('active');
@@ -329,6 +329,11 @@ function switchView(viewName) {
     requestAnimationFrame(() => {
         target.classList.add('active');
     });
+
+    if (!fromPopState) {
+        // Only push state if it's a new navigation, not from back/forward
+        history.pushState({ view: viewName }, '', `#${viewName}`);
+    }
 }
 
 function showError(msg, isReroll = false) {
@@ -725,6 +730,37 @@ function loadLastDistribution() {
     }
 }
 
+// --- History API & Initialization ---
+
+// On initial load, set up the correct view and load all necessary data.
+document.addEventListener('DOMContentLoaded', () => {
+    // Default to 'setup' view if no hash is present
+    const initialView = window.location.hash.substring(1) || 'setup';
+
+    // Set the initial history state without triggering a page load.
+    // This makes the back button work correctly from the start.
+    history.replaceState({ view: initialView }, '', `#${initialView}`);
+
+    // Display the correct initial view without adding a new history entry.
+    switchView(initialView, true);
+
+    // Load all initial data once the DOM is ready.
+    loadRules();
+    loadLanguage();
+    loadLastDistribution();
+    loadImagePreference();
+});
+
+// Handle browser back/forward navigation.
+window.addEventListener('popstate', (event) => {
+    // If a state exists (i.e., we're not at the very beginning of the history),
+    // switch to the view stored in that state.
+    if (event.state && event.state.view) {
+        switchView(event.state.view, true); // `true` prevents a new history entry
+    }
+});
+
+
 // Events
 inputs.startBtn.addEventListener('click', startGame);
 display.card.addEventListener('click', handleCardClick);
@@ -747,19 +783,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-// Load rules on page load
-loadRules();
-
 // Language switcher event listeners
 document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         setLanguage(btn.dataset.lang);
     });
 });
-
-// Load language on page load
-loadLanguage();
-loadLastDistribution();
 
 // Image mode toggle
 let useCardImages = true;
@@ -839,7 +868,6 @@ function updateCardDisplay() {
     }
 }
 
-// Load image preference
 function loadImagePreference() {
     const saved = localStorage.getItem('bang_use_images');
     // Default to true if no preference saved
@@ -856,9 +884,6 @@ const toggleImagesBtn = document.getElementById('toggle-images-btn');
 if (toggleImagesBtn) {
     toggleImagesBtn.addEventListener('click', toggleCardImages);
 }
-
-// Load image preference on page load
-loadImagePreference();
 
 // Burger Menu
 const burgerMenu = document.querySelector('.burger-menu');
