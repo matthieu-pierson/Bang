@@ -171,14 +171,15 @@ const DEFAULT_RULES_TEXT = `4 joueurs : 1 sherif, 1 renegat, 0 horslaloi, 2 adjo
 let RULES = {};
 let DEFAULT_RULES = {}; // Store defaults for reset
 
-// LocalStorage key
-const STORAGE_KEY = 'bang_custom_rules';
+// LocalStorage keys
+const RULES_STORAGE_KEY = 'bang_custom_rules';
+const DISTRIBUTION_STORAGE_KEY = 'bang_last_distribution';
 
 // Parse rules text and build RULES object
 function loadRules() {
     try {
         // Try to load custom rules from localStorage first
-        const customRules = localStorage.getItem(STORAGE_KEY);
+        const customRules = localStorage.getItem(RULES_STORAGE_KEY);
         if (customRules) {
             RULES = JSON.parse(customRules);
             console.log('Loaded custom rules from localStorage:', RULES);
@@ -232,12 +233,12 @@ function loadDefaultRules() {
 }
 
 function saveCustomRules() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(RULES));
+    localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(RULES));
     console.log('Saved custom rules to localStorage');
 }
 
 function resetToDefaults() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(RULES_STORAGE_KEY);
     RULES = JSON.parse(JSON.stringify(DEFAULT_RULES)); // Deep copy
     console.log('Reset to default rules:', RULES);
 }
@@ -356,6 +357,9 @@ function startGame() {
         name: name,
         role: assignedRoles[index]
     }));
+    
+    // Save to localStorage
+    localStorage.setItem(DISTRIBUTION_STORAGE_KEY, JSON.stringify(lastDistribution));
 
     // Show the "View Distribution" button
     inputs.viewDistributionBtn.classList.remove('hidden');
@@ -599,6 +603,19 @@ function closeDistributionView() {
     switchView('setup');
 }
 
+function loadLastDistribution() {
+    const savedDistribution = localStorage.getItem(DISTRIBUTION_STORAGE_KEY);
+    if (savedDistribution) {
+        try {
+            lastDistribution = JSON.parse(savedDistribution);
+            inputs.viewDistributionBtn.classList.remove('hidden');
+        } catch (e) {
+            console.error("Failed to parse last distribution from localStorage", e);
+            lastDistribution = null;
+        }
+    }
+}
+
 // Events
 inputs.startBtn.addEventListener('click', startGame);
 display.card.addEventListener('click', handleCardClick);
@@ -630,6 +647,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 
 // Load language on page load
 loadLanguage();
+loadLastDistribution();
 
 // Image mode toggle
 let useCardImages = true;
