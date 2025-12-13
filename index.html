@@ -31,6 +31,9 @@
             <button id="view-distribution-btn" class="secondary-btn-outline hidden">
                 <span class="btn-text" data-i18n="viewDistribution">📋 Voir la Dernière Distribution</span>
             </button>
+            <button id="reroll-btn" class="secondary-btn-outline hidden">
+                <span class="btn-text" data-i18n="reroll">🎲 Ré-attribuer les rôles</span>
+            </button>
             <div class="language-switcher">
                 <button id="toggle-images-btn" class="toggle-btn active" title="Toggle Card Images">
                     <span class="toggle-icon">🎴</span>
@@ -153,6 +156,27 @@
                     <!-- Populated by JS -->
                 </div>
                 <button id="close-distribution-btn" class="back-btn" data-i18n="back">Retour</button>
+            </div>
+        </section>
+
+        <!-- Reroll Setup View -->
+        <section id="reroll-setup-view" class="view hidden">
+            <div class="content-wrapper">
+                <h1 class="game-title">BANG! <span class="subtitle" data-i18n="reroll">Ré-attribuer les rôles</span></h1>
+                <p class="instruction" data-i18n="instruction">Entrez les noms des joueurs, séparés par des virgules.</p>
+
+                <div class="input-group">
+                    <textarea id="player-names-reroll" spellcheck="false"></textarea>
+                    <div class="glow-effect"></div>
+                </div>
+
+                <p id="error-msg-reroll" class="error-text hidden"></p>
+
+                <button id="confirm-reroll-btn" class="primary-btn">
+                    <span class="btn-text" data-i18n="distribute">Distribuer</span>
+                    <span class="btn-shine"></span>
+                </button>
+                <button id="cancel-reroll-btn" class="back-btn" data-i18n="back">Retour</button>
             </div>
         </section>
 

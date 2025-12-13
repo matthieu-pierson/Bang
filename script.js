@@ -7,6 +7,7 @@ const translations = {
         distribute: "Distribuer",
         editRules: "⚙️ Modifier les Règles",
         viewDistribution: "📋 Voir la Dernière Distribution",
+        reroll: "🎲 Ré-attribuer les rôles",
         
         // Game view
         passDevice: "Passe l'appareil à...",
@@ -41,6 +42,7 @@ const translations = {
         errorTotal: "Le total doit être {count} joueurs (actuellement {current})",
         configAdded: "Configuration ajoutée !",
         confirmReset: "Êtes-vous sûr de vouloir réinitialiser toutes les règles aux valeurs par défaut ?",
+        errorSheriffMissing: "Le Shérif de la dernière partie doit être présent pour ré-attribuer les rôles.",
         
         // Roles
         roleSheriff: "Shérif",
@@ -55,6 +57,7 @@ const translations = {
         distribute: "Distribute",
         editRules: "⚙️ Edit Rules",
         viewDistribution: "📋 View Last Distribution",
+        reroll: "🎲 Reroll Roles",
         
         // Game view
         passDevice: "Pass the device to...",
@@ -89,6 +92,7 @@ const translations = {
         errorTotal: "Total must be {count} players (currently {current})",
         configAdded: "Configuration added!",
         confirmReset: "Are you sure you want to reset all rules to default values?",
+        errorSheriffMissing: "The Sheriff from the last game must be present to reroll.",
         
         // Roles
         roleSheriff: "Sheriff",
@@ -99,6 +103,7 @@ const translations = {
 };
 
 let currentLang = 'fr';
+
 
 function t(key, params = {}) {
     let text = translations[currentLang][key] || key;
@@ -249,7 +254,8 @@ const views = {
     game: document.getElementById('game-view'),
     end: document.getElementById('end-view'),
     editor: document.getElementById('rules-editor-view'),
-    distribution: document.getElementById('distribution-view')
+    distribution: document.getElementById('distribution-view'),
+    rerollSetup: document.getElementById('reroll-setup-view')
 };
 
 const inputs = {
@@ -265,7 +271,11 @@ const inputs = {
     outlawInput: document.getElementById('input-outlaw'),
     deputyInput: document.getElementById('input-deputy'),
     viewDistributionBtn: document.getElementById('view-distribution-btn'),
-    closeDistributionBtn: document.getElementById('close-distribution-btn')
+    rerollBtn: document.getElementById('reroll-btn'),
+    closeDistributionBtn: document.getElementById('close-distribution-btn'),
+    rerollNames: document.getElementById('player-names-reroll'),
+    confirmRerollBtn: document.getElementById('confirm-reroll-btn'),
+    cancelRerollBtn: document.getElementById('cancel-reroll-btn')
 };
 
 const display = {
@@ -275,6 +285,7 @@ const display = {
     roleDesc: document.getElementById('role-description'),
     instruction: document.getElementById('current-instruction'),
     error: document.getElementById('error-msg'),
+    errorReroll: document.getElementById('error-msg-reroll'),
     configList: document.getElementById('config-list'),
     configError: document.getElementById('config-error'),
     distributionList: document.getElementById('distribution-list')
@@ -320,9 +331,10 @@ function switchView(viewName) {
     });
 }
 
-function showError(msg) {
-    display.error.textContent = msg;
-    display.error.classList.remove('hidden');
+function showError(msg, isReroll = false) {
+    const errorEl = isReroll ? display.errorReroll : display.error;
+    errorEl.textContent = msg;
+    errorEl.classList.remove('hidden');
 }
 
 // Actions
@@ -363,12 +375,108 @@ function startGame() {
 
     // Show the "View Distribution" button
     inputs.viewDistributionBtn.classList.remove('hidden');
+    inputs.rerollBtn.classList.remove('hidden');
 
     // UI Reset
     display.card.classList.remove('flipped');
 
     updateGameView();
     switchView('game');
+}
+
+function rerollRoles() {
+    if (!lastDistribution) {
+        showError("Aucune distribution précédente à ré-attribuer.");
+        return;
+    }
+
+    // Pre-fill the reroll text area with players from the last distribution
+    const lastPlayerNames = lastDistribution.map(p => p.name).join(', ');
+    inputs.rerollNames.value = lastPlayerNames;
+
+    // Switch to the reroll setup view
+    switchView('rerollSetup');
+}
+
+function confirmReroll() {
+    const rawText = inputs.rerollNames.value;
+    const currentNames = rawText.split(',').map(n => n.trim()).filter(n => n.length > 0);
+
+    // Clear error
+    display.errorReroll.textContent = "";
+    display.errorReroll.classList.add('hidden');
+
+    if (currentNames.length < 3 || currentNames.length > 7) {
+        showError(t('errorPlayers'), true);
+        return;
+    }
+
+    // Find the sheriff from the last distribution
+    const sheriffInfo = lastDistribution.find(p => p.role.toLowerCase() === 'shérif' || p.role.toLowerCase() === 'sheriff');
+
+    if (!sheriffInfo || !currentNames.includes(sheriffInfo.name)) {
+        showError(t('errorSheriffMissing'), true);
+        return;
+    }
+
+    // Filter last distribution to only include current players
+    const presentPlayersLastDist = lastDistribution.filter(p => currentNames.includes(p.name));
+    
+    // The roles from the previous distribution of present players are used.
+    let rolesToShuffle = presentPlayersLastDist.map(p => p.role);
+    let playersToReceiveRoles = presentPlayersLastDist.map(p => p.name);
+
+    // Separate the sheriff
+    const sheriffRole = sheriffInfo.role;
+    const sheriffName = sheriffInfo.name;
+
+    rolesToShuffle = rolesToShuffle.filter(role => role !== sheriffRole);
+    playersToReceiveRoles = playersToReceiveRoles.filter(name => name !== sheriffName);
+
+    // Shuffle the other roles
+    shuffle(rolesToShuffle);
+
+    // Assign shuffled roles to other players
+    const newAssignedRoles = playersToReceiveRoles.map((name, index) => ({
+        name: name,
+        role: rolesToShuffle[index]
+    }));
+
+    // Add sheriff back to the list
+    newAssignedRoles.push({ name: sheriffName, role: sheriffRole });
+
+    // The order of players matters for the turn-based game view.
+    // We should maintain the order from the text area.
+    players = currentNames;
+    assignedRoles = [];
+    
+    // Create a map of name -> role for easy lookup
+    const roleMap = newAssignedRoles.reduce((acc, p) => {
+        acc[p.name] = p.role;
+        return acc;
+    }, {});
+    
+    // Build the assignedRoles array in the same order as the players array
+    assignedRoles = players.map(name => roleMap[name]);
+
+    // Update and save the new distribution
+    lastDistribution = players.map((name, index) => ({
+        name: name,
+        role: assignedRoles[index]
+    }));
+    localStorage.setItem(DISTRIBUTION_STORAGE_KEY, JSON.stringify(lastDistribution));
+
+    // Reset game state and start the view
+    currentIndex = 0;
+    isCardRevealed = false;
+    display.card.classList.remove('flipped');
+
+    updateGameView();
+    switchView('game');
+}
+
+function cancelReroll() {
+    switchView('setup');
 }
 
 function updateGameView() {
@@ -609,6 +717,7 @@ function loadLastDistribution() {
         try {
             lastDistribution = JSON.parse(savedDistribution);
             inputs.viewDistributionBtn.classList.remove('hidden');
+            inputs.rerollBtn.classList.remove('hidden');
         } catch (e) {
             console.error("Failed to parse last distribution from localStorage", e);
             lastDistribution = null;
@@ -624,6 +733,9 @@ inputs.editRulesBtn.addEventListener('click', openRuleEditor);
 inputs.closeEditorBtn.addEventListener('click', closeRuleEditor);
 inputs.resetRulesBtn.addEventListener('click', handleResetRules);
 inputs.viewDistributionBtn.addEventListener('click', openDistributionView);
+inputs.rerollBtn.addEventListener('click', rerollRoles);
+inputs.confirmRerollBtn.addEventListener('click', confirmReroll);
+inputs.cancelRerollBtn.addEventListener('click', cancelReroll);
 inputs.closeDistributionBtn.addEventListener('click', closeDistributionView);
 inputs.addConfigBtn.addEventListener('click', addConfiguration);
 
