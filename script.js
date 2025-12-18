@@ -124,6 +124,15 @@ function setLanguage(lang) {
         el.textContent = t(key);
     });
     
+    // Handle templates like "4 Players"
+    document.querySelectorAll('[data-i18n-template]').forEach(el => {
+        const key = el.getAttribute('data-i18n-template');
+        const count = el.getAttribute('data-count');
+        if (key === 'players') {
+            el.textContent = `${count} ${t(key)}`;
+        }
+    });
+
     // Update language buttons
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -131,6 +140,11 @@ function setLanguage(lang) {
     
     // Update dynamic content
     updateDynamicTranslations();
+
+    // If rule editor is open, refresh the list
+    if (views.editor.classList.contains('active')) {
+        updateConfigList();
+    }
 }
 
 function updateDynamicTranslations() {
@@ -221,10 +235,10 @@ function loadDefaultRules() {
 
             // Build role array
             const roles = [];
-            for (let i = 0; i < sheriffCount; i++) roles.push('Shérif');
-            for (let i = 0; i < renegadeCount; i++) roles.push('Renégat');
-            for (let i = 0; i < outlawCount; i++) roles.push('Hors-la-loi');
-            for (let i = 0; i < deputyCount; i++) roles.push('Adjoint');
+            for (let i = 0; i < sheriffCount; i++) roles.push('roleSheriff');
+            for (let i = 0; i < renegadeCount; i++) roles.push('roleRenegade');
+            for (let i = 0; i < outlawCount; i++) roles.push('roleOutlaw');
+            for (let i = 0; i < deputyCount; i++) roles.push('roleDeputy');
 
             // Add to tempRules
             if (!tempRules[playerCount]) {
@@ -417,7 +431,7 @@ function confirmReroll() {
     }
 
     // Find the sheriff from the last distribution
-    const sheriffInfo = lastDistribution.find(p => p.role.toLowerCase() === 'shérif' || p.role.toLowerCase() === 'sheriff');
+    const sheriffInfo = lastDistribution.find(p => getRoleKey(p.role) === 'roleSheriff');
 
     if (!sheriffInfo || !currentNames.includes(sheriffInfo.name)) {
         showError(t('errorSheriffMissing'), true);
@@ -497,7 +511,7 @@ function updateGameView() {
     display.instruction.textContent = t('passDevice');
 
     // Pre-set role text but hide it behind card
-    display.roleName.textContent = currentRole;
+    display.roleName.textContent = t(currentRole);
 
     // Set icon and color based on role
     display.roleDesc.textContent = getRoleIcon(currentRole);
@@ -592,14 +606,24 @@ function updateConfigList() {
 
         // Count roles
         const counts = {
-            'Shérif': 0,
-            'Renégat': 0,
-            'Hors-la-loi': 0,
-            'Adjoint': 0
+            'roleSheriff': 0,
+            'roleRenegade': 0,
+            'roleOutlaw': 0,
+            'roleDeputy': 0
         };
-        config.forEach(role => counts[role]++);
+        config.forEach(role => {
+            const key = getRoleKey(role); // Handles both keys and old names
+            if (counts.hasOwnProperty(key)) {
+                counts[key]++;
+            }
+        });
 
-        const rolesText = `${counts['Shérif']} Shérif, ${counts['Renégat']} Renégat, ${counts['Hors-la-loi']} Hors-la-loi, ${counts['Adjoint']} Adjoint`;
+        const rolesText = [
+            `${counts.roleSheriff} ${t('roleSheriff')}`,
+            `${counts.roleRenegade} ${t('roleRenegade')}`,
+            `${counts.roleOutlaw} ${t('roleOutlaw')}`,
+            `${counts.roleDeputy} ${t('roleDeputy')}`
+        ].join(', ');
 
         item.innerHTML = `
             <span class="config-roles">${rolesText}</span>
@@ -638,10 +662,10 @@ function addConfiguration() {
 
     // Build role array
     const roles = [];
-    for (let i = 0; i < sheriff; i++) roles.push(t('roleSheriff'));
-    for (let i = 0; i < renegade; i++) roles.push(t('roleRenegade'));
-    for (let i = 0; i < outlaw; i++) roles.push(t('roleOutlaw'));
-    for (let i = 0; i < deputy; i++) roles.push(t('roleDeputy'));
+    for (let i = 0; i < sheriff; i++) roles.push('roleSheriff');
+    for (let i = 0; i < renegade; i++) roles.push('roleRenegade');
+    for (let i = 0; i < outlaw; i++) roles.push('roleOutlaw');
+    for (let i = 0; i < deputy; i++) roles.push('roleDeputy');
 
     // Add to RULES
     if (!RULES[selectedPlayerCount]) {
@@ -701,7 +725,7 @@ function openDistributionView() {
                 <div class="distribution-player-name">${name}</div>
                 <div class="distribution-role" style="background: ${roleColor};">
                     <span class="distribution-icon">${icon}</span>
-                    <span class="distribution-role-name">${role}</span>
+                    <span class="distribution-role-name">${t(role)}</span>
                 </div>
             </div>
         `;
@@ -793,35 +817,44 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 // Image mode toggle
 let useCardImages = true;
 
-function getRoleImagePath(role) {
-    const roleMap = {
-        'Shérif': 'sherif.png',
-        'Sheriff': 'sherif.png',
-        'Renégat': 'renegat.png',
-        'Renegade': 'renegat.png',
-        'Hors-la-loi': 'horslaloi.png',
-        'Outlaw': 'horslaloi.png',
-        'Adjoint': 'adjoint.png',
-        'Deputy': 'adjoint.png'
+function getRoleKey(role) {
+    if (!role) return '';
+    const lowerRole = role.toLowerCase();
+    const keyMap = {
+        'shérif': 'roleSheriff', 'sheriff': 'roleSheriff',
+        'renégat': 'roleRenegade', 'renegade': 'roleRenegade',
+        'hors-la-loi': 'roleOutlaw', 'outlaw': 'roleOutlaw',
+        'adjoint': 'roleDeputy', 'deputy': 'roleDeputy'
     };
-    return `resources/roles/${roleMap[role] || 'sherif.png'}`;
+    return keyMap[lowerRole] || role; // Return role itself if it's already a key or unknown
+}
+
+function getRoleImagePath(role) {
+    const key = getRoleKey(role);
+    const roleMap = {
+        'roleSheriff': 'sherif.png',
+        'roleRenegade': 'renegat.png',
+        'roleOutlaw': 'horslaloi.png',
+        'roleDeputy': 'adjoint.png'
+    };
+    return `resources/roles/${roleMap[key] || 'sherif.png'}`;
 }
 
 function getRoleColor(role) {
-    const r = role.toLowerCase();
-    if (r === 'shérif' || r === 'sheriff') return '#FFD700';
-    if (r === 'renégat' || r === 'renegade') return '#FF6B6B';
-    if (r === 'hors-la-loi' || r === 'outlaw') return '#8B4513';
-    if (r === 'adjoint' || r === 'deputy') return '#4A90E2';
+    const key = getRoleKey(role);
+    if (key === 'roleSheriff') return '#FFD700';
+    if (key === 'roleRenegade') return '#FF6B6B';
+    if (key === 'roleOutlaw') return '#8B4513';
+    if (key === 'roleDeputy') return '#4A90E2';
     return 'var(--primary-accent)'; // Default
 }
 
 function getRoleIcon(role) {
-    const r = role.toLowerCase();
-    if (r === 'shérif' || r === 'sheriff') return "★";
-    if (r === 'renégat' || r === 'renegade') return "🦅";
-    if (r === 'hors-la-loi' || r === 'outlaw') return "🔫";
-    if (r === 'adjoint' || r === 'deputy') return "👮";
+    const key = getRoleKey(role);
+    if (key === 'roleSheriff') return "★";
+    if (key === 'roleRenegade') return "🦅";
+    if (key === 'roleOutlaw') return "🔫";
+    if (key === 'roleDeputy') return "👮";
     return "★"; // Default
 }
 
@@ -855,7 +888,7 @@ function updateCardDisplay() {
         const img = document.createElement('img');
         img.className = 'role-image';
         img.src = getRoleImagePath(assignedRoles[currentIndex]);
-        img.alt = assignedRoles[currentIndex];
+        img.alt = t(assignedRoles[currentIndex]);
         roleReveal.appendChild(img);
     } else {
         cardBack.classList.remove('image-mode');
